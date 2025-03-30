@@ -50,6 +50,8 @@ public class MatchDataProcessor implements ItemProcessor<MatchInput, Match> { //
          match.setUmpire1(matchInput.getUmpire1());
          match.setUmpire2(matchInput.getUmpire2());
 
+         System.out.println("Created match:" + match);
+
          return match;
     }
 }

@@ -24,7 +24,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.projects.dashboard.model.Match;
 
 @Configuration
-@EnableBatchProcessing
 public class BatchConfig { //executes a batch job
 
     private final String[] FIELD_NAMES = new String[] {
@@ -45,16 +44,24 @@ public class BatchConfig { //executes a batch job
     
     @Bean
     public FlatFileItemReader<MatchInput> reader() { //reader - reads from our csv file and outputs MatchInput readers
+        System.out.println("Hello!!!!");
+        // return new FlatFileItemReaderBuilder<MatchInput>()
+        //     .name("MatchItemReader")
+        //     .resource(new ClassPathResource("match-data.csv"))
+        //     .delimited()
+        //     .names(FIELD_NAMES)
+        //     .fieldSetMapper(new BeanWrapperFieldSetMapper<MatchInput>() {
+        //         {
+        //             setTargetType(MatchInput.class);
+        //         }
+        //     }).build();
         return new FlatFileItemReaderBuilder<MatchInput>()
-            .name("MatchItemReader")
+            .name("matchItemReader")
             .resource(new ClassPathResource("match-data.csv"))
             .delimited()
             .names(FIELD_NAMES)
-            .fieldSetMapper(new BeanWrapperFieldSetMapper<MatchInput>() {
-                {
-                    setTargetType(MatchInput.class);
-                }
-            }).build();
+            .targetType(MatchInput.class)
+            .build();
     }
 
     @Bean 
@@ -64,10 +71,16 @@ public class BatchConfig { //executes a batch job
 
     @Bean
     public JdbcBatchItemWriter<Match> writer (DataSource dataSource) { //writer - writes value to db
+        // return new JdbcBatchItemWriterBuilder<Match>()
+        //     .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+        //     .sql("INSERT INTO match (id, city, date, player_of_match, venue, team1, team2, toss_winner, toss_decision, match_winner, result, result_margin, umpire1, umpire2) " 
+        //     + "VALUES (:id, :city, :date:, :playerOfMatch, :venue, :team1, :team2, :tossWinner, :tossDecision, :matchWinner, :result, :resultMargin, :umpire1, :umpire2) ").dataSource(dataSource)
+        //     .build();
         return new JdbcBatchItemWriterBuilder<Match>()
-            .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
             .sql("INSERT INTO match (id, city, date, player_of_match, venue, team1, team2, toss_winner, toss_decision, match_winner, result, result_margin, umpire1, umpire2) " 
-            + "VALUES (:id, :city, :date:, :playerOfMatch, :venue, :team1, :team2, :tossWinner, :tossDecision, :matchWinner, :result, :resultMargin, :umpire1, :umpire2) ").dataSource(dataSource)
+            + "VALUES (:id, :city, :date, :playerOfMatch, :venue, :team1, :team2, :tossWinner, :tossDecision, :matchWinner, :result, :resultMargin, :umpire1, :umpire2) ")
+            .dataSource(dataSource)
+            .beanMapped()
             .build();
     }
 

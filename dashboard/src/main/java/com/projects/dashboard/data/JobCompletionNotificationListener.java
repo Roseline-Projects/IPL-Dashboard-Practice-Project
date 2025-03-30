@@ -1,6 +1,7 @@
 package com.projects.dashboard.data;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -15,20 +16,27 @@ import org.springframework.stereotype.Component;
 
 import com.projects.dashboard.model.Match;
 import com.projects.dashboard.model.Team;
+import com.projects.dashboard.repository.TeamRepository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 
 @Component
 public class JobCompletionNotificationListener implements JobExecutionListener {
     private static final Logger log = LoggerFactory.getLogger(JobCompletionNotificationListener.class);
 
-    private final JdbcTemplate jdbcTemplate;
+    //private final JdbcTemplate jdbcTemplate;
+    //@PersistenceContext
+    // @Autowired
     private final EntityManager em;
+
+    @Autowired
+    private TeamRepository teamRepository;
     
     @Autowired
-    public JobCompletionNotificationListener(JdbcTemplate jdbcTemplate, EntityManager em) {
-        this.jdbcTemplate = jdbcTemplate;
+    public JobCompletionNotificationListener(EntityManager em) {
+        //this.jdbcTemplate = jdbcTemplate;
         this.em = em;
     }
 
@@ -38,9 +46,9 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
       if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
         log.info("!!! JOB FINISHED! Time to verify the results");
 
-        jdbcTemplate
-            .query("SELECT team1, team2, date FROM match", new DataClassRowMapper<>(Match.class))
-            .forEach(match -> log.info("Found <{}> in the database.", match));
+        // jdbcTemplate
+        //     .query("SELECT team1, team2, date FROM match", new DataClassRowMapper<>(Match.class))
+        //     .forEach(match -> log.info("Found <{}> in the database.", match));
             
         Map<String, Team> teamData = new HashMap<>();
         em.createQuery("select m.team1, count(*) from Match m group by m.team1", Object[].class)
@@ -63,9 +71,17 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
             .forEach(e -> {
               Team team = teamData.get((String) e[0]);
               if(team != null) team.setTotalWins((long) e[1]);
+              System.out.println("persisted team:" + (String) e[0]);
             });
 
-          teamData.values().forEach(team -> em.persist(team));
+            //bug: items properly loaded into em database, but not accessible to repository otherwise
+            teamData.values().forEach(team -> em.persist(team));
+            //teamData.values().forEach(team -> teamRepository.save(team));
+            //teamData.values().forEach(team -> System.out.println(em.contains(team)));
+            ///teamData.values().forEach(team -> System.out.println(team));
+            //em.flush();
+            // List<Team> teams = em.createQuery("SELECT t FROM Team t", Team.class).getResultList();
+            // log.info("Teams from database: " + teams);
       }
   }
 }
