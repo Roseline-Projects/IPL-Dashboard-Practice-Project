@@ -2,13 +2,17 @@ package com.projects.dashboard.model;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Entity
 public class Match { //match data processor - the processor will convert the raw csv MatchInput objects to these Match objects
 
+    @Id
     private long id;
     private String city;
     private LocalDate date;
