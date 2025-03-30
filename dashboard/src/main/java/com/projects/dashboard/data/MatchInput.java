@@ -5,9 +5,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MatchInput { //the input coming from the csv file
+public class MatchInput { //used to parse the input coming from the csv file
     //this isn't really the model - this class is formatted 
     //based on the csv file
+
+    //technically, this is a business class
+    //it preceeds the processor
 
     private String id;
     private String city;
